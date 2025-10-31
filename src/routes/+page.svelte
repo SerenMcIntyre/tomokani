@@ -1,14 +1,31 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
 
-  let name = $state("");
+  let key = $state("");
   let greetMsg = $state("");
-
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
-  }
+  
+  const retrieve_level_data = async () =>
+  {
+      try {
+        const data = await invoke("retrieve_level_data");
+        console.log("Level Data:", data);
+        alert('done' + JSON.stringify(data));
+      } catch (err) {
+        console.error('retrieve_level_data failed', err);
+        alert('retrieve_level_data failed: ' + JSON.stringify(err));
+      }
+  };
+  
+  const set_api_key = async (key: string) =>
+  {
+      try {
+        const res = await invoke("set_api_key", { apiKey: key });
+        alert(JSON.stringify(res));
+      } catch (err) {
+        console.error('set_api_key failed', err);
+        alert('set_api_key failed: ' + JSON.stringify(err));
+      }
+  };
 </script>
 
 <main class="container">
@@ -27,11 +44,12 @@
   </div>
   <p>Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
 
-  <form class="row" onsubmit={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit">Greet</button>
+  <form class="row" onsubmit={() => set_api_key(key)}>
+    <input id="greet-input" placeholder="Set api key" bind:value={key} />
+    <button type="submit">Set API Key</button>
   </form>
   <p>{greetMsg}</p>
+  <button type="button" onclick={() => retrieve_level_data()}>Retrieve Level Data</button>
 </main>
 
 <style>
