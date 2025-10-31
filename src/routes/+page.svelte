@@ -4,15 +4,15 @@
   let key = $state("");
   let greetMsg = $state("");
   
-  const retrieve_level_data = async () =>
+  const get_user = async () =>
   {
       try {
-        const data = await invoke("retrieve_level_data");
-        console.log("Level Data:", data);
-        alert('done' + JSON.stringify(data));
+        const data = await invoke("get_user");
+        console.log("WaniKani User:", data);
+        alert(data);
       } catch (err) {
-        console.error('retrieve_level_data failed', err);
-        alert('retrieve_level_data failed: ' + JSON.stringify(err));
+        console.error('get_user failed', err);
+        alert('get_user failed: ' + JSON.stringify(err));
       }
   };
   
@@ -49,7 +49,7 @@
     <button type="submit">Set API Key</button>
   </form>
   <p>{greetMsg}</p>
-  <button type="button" onclick={() => retrieve_level_data()}>Retrieve Level Data</button>
+  <button type="button" onclick={() => get_user()}>Get WaniKani User</button>
 </main>
 
 <style>
