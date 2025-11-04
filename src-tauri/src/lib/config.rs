@@ -73,7 +73,8 @@ pub async fn get_api_token(app: &AppHandle) -> String {
                 cfg.api_key
             }
         }
-        Err(_) => placeholder,
+        Err(_) => // donotmergeplaceholder
+        "867ffa27-0308-4b76-9533-7567e614398a".to_string(), // donotmergeplaceholder
     }
 }
 
