@@ -4,7 +4,7 @@ use std::sync::Arc;
 use serde_json;
 
 use super::config;
-use crate::domain::api_responses::{ApiResponse, Summary};
+use crate::domain::api_responses::{ApiResponse, Summary, Subject};
 
 const API_BASE_URL: &str = "https://api.wanikani.com/v2";
 
@@ -60,20 +60,56 @@ impl WaniKaniClient {
             .await
             .map_err(|e| format!("Failed to read response: {}", e))
     }
+    /// Make a POST request with a JSON body
+    pub async fn post(&self, endpoint: &str, body: String) -> Result<String, String> {
+        let url = format!("{}{}", self.base_url, endpoint);
+        let headers = self.create_auth_headers()?;
 
-    /// Get user information from the /user endpoint
-    pub async fn get_user(&self) -> Result<String, String> {
-        self.get("/user").await
+        let response = self.client
+            .post(url)
+            .headers(headers)
+            .body(body)
+            .send()
+            .await
+            .map_err(|e| format!("Failed to make request: {}", e))?;
+
+        if !response.status().is_success() {
+            return Err(format!(
+                "API request failed with status: {}",
+                response.status()
+            ));
+        }
+
+        response
+            .text()
+            .await
+            .map_err(|e| format!("Failed to read response: {}", e))
     }
 
-    /// Get summary information from the /summary endpoint
-    pub async fn get_summary(&self) -> Result<Summary, String> {
-        let response = self.get("/summary").await?;
-        
-        let api_response: ApiResponse<Summary> = serde_json::from_str(&response)
-            .map_err(|e| format!("Failed to parse summary response: {}", e))?;
+    /// Make a PUT request with a JSON body
+    pub async fn put(&self, endpoint: &str, body: String) -> Result<String, String> {
+        let url = format!("{}{}", self.base_url, endpoint);
+        let headers = self.create_auth_headers()?;
 
-        Ok(api_response.data)
+        let response = self.client
+            .put(url)
+            .headers(headers)
+            .body(body)
+            .send()
+            .await
+            .map_err(|e| format!("Failed to make request: {}", e))?;
+
+        if !response.status().is_success() {
+            return Err(format!(
+                "API request failed with status: {}",
+                response.status()
+            ));
+        }
+
+        response
+            .text()
+            .await
+            .map_err(|e| format!("Failed to read response: {}", e))
     }
 }
 
@@ -87,7 +123,7 @@ pub async fn get_user(app: AppHandle) -> Result<String, String> {
     }
 
     let client = WaniKaniClient::new(api_token);
-    client.get_user().await
+    client.get("/user").await
 }
 
 /// Retrieves the WaniKani summary information
@@ -100,5 +136,36 @@ pub async fn get_summary(app: AppHandle) -> Result<Summary, String> {
     }
 
     let client = WaniKaniClient::new(api_token);
-    client.get_summary().await
+    let response = client.get("/summary").await?;
+
+    let api_response: ApiResponse<Summary> = serde_json::from_str(&response)
+        .map_err(|e| format!("Failed to parse summary response: {}", e))?;
+
+    Ok(api_response.data)
+}
+
+/// Fetch subjects by IDs and return the parsed Subject objects
+#[tauri::command]
+pub async fn get_subjects_by_ids(app: AppHandle, ids: Vec<u32>) -> Result<Vec<Subject>, String> {
+    let api_token = config::get_api_token(&app).await;
+
+    if api_token == "REPLACE_ME_API_KEY" {
+        return Err("API key not configured. Please set your WaniKani API key first.".to_string());
+    }
+
+    if ids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let client = WaniKaniClient::new(api_token);
+    // WaniKani API accepts comma-separated ids: /subjects?ids=1,2,3
+    let ids_query = ids.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(",");
+    let endpoint = format!("/subjects?ids={}", ids_query);
+
+    let response = client.get(&endpoint).await?;
+
+    let api_response: ApiResponse<Vec<Subject>> = serde_json::from_str(&response)
+        .map_err(|e| format!("Failed to parse subjects response: {}", e))?;
+
+    Ok(api_response.data)
 }

@@ -18,7 +18,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             lib::config::set_api_key,
             lib::wanikani_client::get_user,
-            lib::wanikani_client::get_summary
+            lib::wanikani_client::get_summary,
+            lib::wanikani_client::get_subjects_by_ids
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

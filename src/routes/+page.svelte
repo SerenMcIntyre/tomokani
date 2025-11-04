@@ -76,6 +76,13 @@
         {#if summary.reviews && summary.reviews.length > 0}
           <p class="big">+{firstCount(summary.reviews)}</p>
           <p>available at {formatHour(summary.reviews[0].available_at)}</p>
+          <svelte:boundary>
+          {#snippet pending()}pending...{/snippet}
+          {#snippet failed(error)}{JSON.stringify(error)}{/snippet}
+
+          {JSON.stringify(await invoke("get_subjects_by_ids", { ids: summary.reviews[0].subject_ids}))}
+
+          </svelte:boundary>
 
           {#if summary.reviews.length > 1}
             <div class="hour-list">
