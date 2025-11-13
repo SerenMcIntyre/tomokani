@@ -4,7 +4,7 @@ use std::sync::Arc;
 use serde_json;
 
 use super::config;
-use crate::domain::api_responses::{ApiResponse, Summary, Subject};
+use crate::domain::api_responses::{ApiResponse, Assignment, Subject, Summary};
 
 const API_BASE_URL: &str = "https://api.wanikani.com/v2";
 
@@ -116,7 +116,7 @@ impl WaniKaniClient {
 /// Creates a WaniKani client instance and returns user information
 #[tauri::command]
 pub async fn get_user(app: AppHandle) -> Result<String, String> {
-    let api_token = config::get_api_token(&app).await;
+    let api_token = config::get_api_key(app.clone()).await;
     
     if api_token == "REPLACE_ME_API_KEY" {
         return Err("API key not configured. Please set your WaniKani API key first.".to_string());
@@ -129,7 +129,7 @@ pub async fn get_user(app: AppHandle) -> Result<String, String> {
 /// Retrieves the WaniKani summary information
 #[tauri::command]
 pub async fn get_summary(app: AppHandle) -> Result<Summary, String> {
-    let api_token = config::get_api_token(&app).await;
+    let api_token = config::get_api_key(app.clone()).await;
     
     if api_token == "REPLACE_ME_API_KEY" {
         return Err("API key not configured. Please set your WaniKani API key first.".to_string());
@@ -147,7 +147,7 @@ pub async fn get_summary(app: AppHandle) -> Result<Summary, String> {
 /// Fetch subjects by IDs and return the parsed Subject objects
 #[tauri::command]
 pub async fn get_subjects_by_ids(app: AppHandle, ids: Vec<u32>) -> Result<Vec<Subject>, String> {
-    let api_token = config::get_api_token(&app).await;
+    let api_token = config::get_api_key(app.clone()).await;
 
     if api_token == "REPLACE_ME_API_KEY" {
         return Err("API key not configured. Please set your WaniKani API key first.".to_string());
@@ -165,7 +165,24 @@ pub async fn get_subjects_by_ids(app: AppHandle, ids: Vec<u32>) -> Result<Vec<Su
     let response = client.get(&endpoint).await?;
 
     let api_response: ApiResponse<Vec<Subject>> = serde_json::from_str(&response)
-        .map_err(|e| format!("Failed to parse subjects response: {}", e))?;
+        .map_err(|e| format!("Failed to parse subjects response: {} from object of json {}", e, &response))?;
+
+    Ok(api_response.data)
+}
+
+#[tauri::command]
+pub async fn get_assignments(app: AppHandle) -> Result<Vec<Assignment>, String> {
+    let api_token = config::get_api_key(app.clone()).await;
+
+    if api_token == "REPLACE_ME_API_KEY" {
+        return Err("API key not configured. Please set your WaniKani API key first.".to_string());
+    }
+
+    let client = WaniKaniClient::new(api_token);
+    let response = client.get("/assignments").await?;
+
+    let api_response: ApiResponse<Vec<Assignment>> = serde_json::from_str(&response)
+        .map_err(|e| format!("Failed to parse assignments response: {}", e))?;
 
     Ok(api_response.data)
 }

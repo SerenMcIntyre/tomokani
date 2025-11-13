@@ -37,9 +37,11 @@ async fn write_file_blocking(path: PathBuf, bytes: Vec<u8>) -> std::io::Result<(
     .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("join error: {}", e)))?
 }
 
-/// Get the API token from config. Returns placeholder if not set.
-pub async fn get_api_token(app: &AppHandle) -> String {
-    let config_path = get_config_path(app);
+/// Get the API key from config. Returns placeholder if not set.
+/// Exposed as a Tauri command but also callable from Rust code.
+#[tauri::command]
+pub async fn get_api_key(app: AppHandle) -> String {
+    let config_path = get_config_path(&app);
     let placeholder = "REPLACE_ME_API_KEY".to_string();
 
     // Try to read the file
@@ -93,7 +95,6 @@ pub async fn set_api_key(api_key: String, app: tauri::AppHandle) -> Result<Strin
         .map_err(|e| format!("failed to write config: {}", e))?;
 
     Ok(format!(
-        "Set API key successfully at path {}",
-        config_path.display()
+        "Set API key successfully",
     ))
 }

@@ -1,6 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct BaseObject {
+    pub id: u32,
+    pub object: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Learning {
     pub available_at: String,
     pub subject_ids: Vec<u32>,
@@ -33,7 +39,7 @@ pub struct Reading {
     pub accepted_answer: bool,
     //wip - this wasn't here when tested
     #[serde(rename = "type")]
-    pub type_: String,
+    pub type_: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -54,7 +60,22 @@ pub struct SubjectData {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Subject {
-    pub id: u32,
-    pub object: String,
+    #[serde(flatten)]
+    pub base: BaseObject,
     pub data: SubjectData
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AssignmentData {
+    pub subject_id: u32,
+    pub srs_stage: u8,
+    pub available_at: Option<String>,
+    pub hidden: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Assignment {
+    #[serde(flatten)]
+    pub base: BaseObject,
+    pub data: AssignmentData,
 }

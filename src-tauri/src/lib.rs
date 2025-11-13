@@ -4,7 +4,7 @@ pub mod lib {
     pub mod wanikani_client;
 }
 
-pub use lib::config::set_api_key;
+pub use lib::config::{set_api_key, get_api_key};
 pub use lib::wanikani_client::{get_user, get_summary};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -17,6 +17,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             lib::config::set_api_key,
+            lib::config::get_api_key,
             lib::wanikani_client::get_user,
             lib::wanikani_client::get_summary,
             lib::wanikani_client::get_subjects_by_ids
