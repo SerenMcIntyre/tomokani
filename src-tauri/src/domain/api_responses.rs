@@ -79,3 +79,16 @@ pub struct Assignment {
     pub base: BaseObject,
     pub data: AssignmentData,
 }
+
+#[derive(Debug, Deserialize, Serialize)] 
+pub struct Subscription {
+    pub active: bool,
+    pub max_level_granted: u8,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct User {
+    pub username: String,
+    pub level: u8,
+    pub subscription: Subscription
+}

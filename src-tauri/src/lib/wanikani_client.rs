@@ -4,7 +4,7 @@ use std::sync::Arc;
 use serde_json;
 
 use super::config;
-use crate::domain::api_responses::{ApiResponse, Assignment, Subject, Summary};
+use crate::domain::api_responses::{ApiResponse, Assignment, Subject, Summary, User};
 
 const API_BASE_URL: &str = "https://api.wanikani.com/v2";
 
@@ -115,7 +115,7 @@ impl WaniKaniClient {
 
 /// Creates a WaniKani client instance and returns user information
 #[tauri::command]
-pub async fn get_user(app: AppHandle) -> Result<String, String> {
+pub async fn get_user(app: AppHandle) -> Result<User, String> {
     let api_token = config::get_api_key(app.clone()).await;
     
     if api_token == "REPLACE_ME_API_KEY" {
@@ -123,7 +123,12 @@ pub async fn get_user(app: AppHandle) -> Result<String, String> {
     }
 
     let client = WaniKaniClient::new(api_token);
-    client.get("/user").await
+    let response = client.get("/user").await?;
+    
+    let api_response: ApiResponse<User> = serde_json::from_str(&response)
+        .map_err(|e| format!("Failed to parse user response: {}", e))?;
+        
+    Ok(api_response.data)
 }
 
 /// Retrieves the WaniKani summary information

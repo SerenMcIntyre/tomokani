@@ -20,20 +20,8 @@
   };
 </script>
 
-<main class="container">
   <h1>WaniKani Summary</h1>
 
-  <div class="row">
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo vite" alt="Vite Logo" />
-    </a>
-    <a href="https://tauri.app" target="_blank">
-      <img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank">
-      <img src="/svelte.svg" class="logo svelte-kit" alt="SvelteKit Logo" />
-    </a>
-  </div>
   <p>
     Below are quick counts pulled from your WaniKani summary (first-item counts
     shown as +x, remaining items added as total).
@@ -74,32 +62,31 @@
       <article class="card">
         <h2>Reviews</h2>
         {#if summary.reviews && summary.reviews.length > 0}
-          <p class="big">+{firstCount(summary.reviews)}</p>
+          <p class="big">{firstCount(summary.reviews)}</p>
           <p>available at {formatHour(summary.reviews[0].available_at)}</p>
-          <svelte:boundary>
-          {#snippet pending()}pending...{/snippet}
-
-          </svelte:boundary>
-
-          {#if summary.reviews.length > 1}
-            <div class="hour-list">
-              {#each summary.reviews.slice(1) as r}
-                <span class="hour-item">+{r.subject_ids.length} @ {formatHour(r.available_at)}</span>
-              {/each}
-            </div>
-          {/if}
-
-          <p class="muted">total (remaining) = {remainingTotal(summary.reviews)}</p>
         {:else}
           <p class="big">0</p>
           <p class="muted">no reviews</p>
+        {/if}
+      </article>
+      
+      <article class="card">
+        <h2>Upcoming Reviews</h2>
+        {#if summary.reviews && summary.reviews.length > 1}
+          <div class="hour-list">
+            {#each summary.reviews.slice(1) as r}
+              <span class="hour-item">{r.subject_ids.length} @ {formatHour(r.available_at)}</span>
+            {/each}
+          </div>
+          <p class="muted">total (remaining) = {remainingTotal(summary.reviews)}</p>
+        {:else}
+          <p class="muted">no upcoming reviews</p>
         {/if}
       </article>
     </section>
   {:catch err}
     <p class="error">Failed to load summary: {String(err)}</p>
   {/await}
-</main>
 
 <style>
   .logo.vite:hover {
@@ -222,9 +209,10 @@
 
   /* Cards and small helpers */
   .cards {
-    display: flex;
+    display: grid;
+    place-items: center;
+    grid-auto-flow: row;
     gap: 1rem;
-    justify-content: center;
     margin-top: 1.25rem;
     flex-wrap: wrap;
   }
@@ -236,6 +224,7 @@
     min-width: 180px;
     box-shadow: 0 6px 14px rgba(16,24,40,0.08);
     text-align: left;
+    width: 75%;
   }
 
   .big {
