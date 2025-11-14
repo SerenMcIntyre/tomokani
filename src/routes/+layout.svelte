@@ -6,16 +6,14 @@
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();
   $effect(() => {
-    alert(`Layout data: ${JSON.stringify(data.user)}`);
     if (page.route.id !== "/settings" && !data.configValid) {
-        alert("Please set your WaniKani API Key in Settings before continuing.");
         goto("/settings");
     }
   });
 
 </script>
 
-<nav>
+<nav class="p-4">
   <a href="/">Home</a> |
   <a href="/settings">Settings</a>
 </nav>

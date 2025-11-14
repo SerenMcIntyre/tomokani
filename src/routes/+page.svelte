@@ -8,16 +8,6 @@
     "get_summary"
   ) as Promise<Summary>;
 
-  const get_user = async () => {
-    try {
-      const data = await invoke("get_user");
-      console.log("WaniKani User:", data);
-      alert(JSON.stringify(data));
-    } catch (err) {
-      console.error("get_user failed", err);
-      alert("get_user failed: " + JSON.stringify(err));
-    }
-  };
 </script>
 
   <h1>WaniKani Summary</h1>
@@ -26,13 +16,6 @@
     Below are quick counts pulled from your WaniKani summary (first-item counts
     shown as +x, remaining items added as total).
   </p>
-  <!-- 
-  <form class="row" onsubmit={() => set_api_key(key)}>
-    <input id="greet-input" placeholder="Set api key" bind:value={key} />
-    <button type="submit">Set API Key</button>
-  </form> -->
-  <p></p>
-  <button type="button" on:click={() => get_user()}>Get WaniKani User</button>
 
   {#await summaryPromise}
     <p>Loading summary…</p>
@@ -59,7 +42,7 @@
         {/if}
       </article>
 
-      <article class="card">
+      <a class="card" href="/reviews">
         <h2>Reviews</h2>
         {#if summary.reviews && summary.reviews.length > 0}
           <p class="big">{firstCount(summary.reviews)}</p>
@@ -68,7 +51,7 @@
           <p class="big">0</p>
           <p class="muted">no reviews</p>
         {/if}
-      </article>
+      </a>
       
       <article class="card">
         <h2>Upcoming Reviews</h2>
