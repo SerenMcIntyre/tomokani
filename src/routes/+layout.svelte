@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import "../app.css";
   import type { LayoutData } from "./$types";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
