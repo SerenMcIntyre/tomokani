@@ -20,7 +20,8 @@ pub fn run() {
             lib::config::get_api_key,
             lib::wanikani_client::get_user,
             lib::wanikani_client::get_summary,
-            lib::wanikani_client::get_subjects_by_ids
+            lib::wanikani_client::get_subjects_by_ids,
+            lib::wanikani_client::submit_review
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use serde_json;
 
 use super::config;
-use crate::domain::api_responses::{ApiResponse, Assignment, Subject, Summary, User};
+use crate::domain::api_responses::{ApiResponse, Assignment, ReviewPayload, Subject, Summary, User};
 
 const API_BASE_URL: &str = "https://api.wanikani.com/v2";
 
@@ -63,8 +63,10 @@ impl WaniKaniClient {
     /// Make a POST request with a JSON body
     pub async fn post(&self, endpoint: &str, body: String) -> Result<String, String> {
         let url = format!("{}{}", self.base_url, endpoint);
-        let headers = self.create_auth_headers()?;
+        let mut headers = self.create_auth_headers()?;
+        headers.insert("Content-Type", HeaderValue::from_static("application/json"));
 
+        println!("POST {} with body: {}", endpoint, body);
         let response = self.client
             .post(url)
             .headers(headers)
@@ -73,17 +75,24 @@ impl WaniKaniClient {
             .await
             .map_err(|e| format!("Failed to make request: {}", e))?;
 
-        if !response.status().is_success() {
+        let status = response.status();
+        let resp_text = response
+            .text()
+            .await
+            .map_err(|e| format!("Failed to read response: {}", e))?;
+
+        // Log status and response body
+        println!("POST {} returned status: {}", endpoint, status);
+        println!("POST {} response body: {}", endpoint, resp_text);
+
+        if !status.is_success() {
             return Err(format!(
-                "API request failed with status: {}",
-                response.status()
+                "API request failed with status: {} and body: {}",
+                status, resp_text
             ));
         }
 
-        response
-            .text()
-            .await
-            .map_err(|e| format!("Failed to read response: {}", e))
+        Ok(resp_text)
     }
 
     /// Make a PUT request with a JSON body
@@ -190,4 +199,24 @@ pub async fn get_assignments(app: AppHandle) -> Result<Vec<Assignment>, String> 
         .map_err(|e| format!("Failed to parse assignments response: {}", e))?;
 
     Ok(api_response.data)
+}
+
+#[tauri::command]
+pub async fn submit_review(app: AppHandle, review: ReviewPayload) -> Result<(), String> {
+    let api_token = config::get_api_key(app.clone()).await;
+
+    if api_token == "REPLACE_ME_API_KEY" {
+        return Err("API key not configured. Please set your WaniKani API key first.".to_string());
+    }
+
+    let client = WaniKaniClient::new(api_token);
+    let body = serde_json::to_string(&review)
+        .map_err(|e| format!("Failed to serialize review payload: {}", e))?;
+
+    // Log the JSON body before sending
+    println!("Submitting review payload: {}", body);
+
+    client.post("/reviews", body).await?;
+
+    Ok(())
 }

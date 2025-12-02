@@ -43,8 +43,15 @@ pub struct Reading {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct CharacterImage {
+    pub url: String,
+    pub content_type: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct SubjectData {
     pub characters: Option<String>,
+    pub character_images: Option<Vec<CharacterImage>>,
     pub meanings: Vec<Meaning>,
     pub readings: Option<Vec<Reading>>,
     pub level: u8,
@@ -91,4 +98,18 @@ pub struct User {
     pub username: String,
     pub level: u8,
     pub subscription: Subscription
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ReviewData {
+    pub subject_id: Option<u32>,
+    pub assignment_id: Option<u32>,
+    pub incorrect_meaning_answers: u32,
+    pub incorrect_reading_answers: u32,
+    pub created_at: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ReviewPayload {
+    pub review: ReviewData,
 }
